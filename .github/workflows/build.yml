@@ -1,0 +1,31 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Archive
+        run: |
+          xcodebuild archive \
+            -project TubeArchivistTV.xcodeproj \
+            -scheme TubeArchivistTV \
+            -destination "generic/platform=iOS" \
+            -archivePath build/TubeTV.xcarchive \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir Payload
+          cp -r build/TubeTV.xcarchive/Products/Applications/TubeArchivistTV.app Payload/
+          zip -r TubeTV.ipa Payload/
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v3
+        with:
+          name: TubeTV
+          path: TubeTV.ipa
